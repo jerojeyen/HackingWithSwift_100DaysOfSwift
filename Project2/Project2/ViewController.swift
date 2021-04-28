@@ -16,6 +16,8 @@ class ViewController: UIViewController {
     var countries = [String]()
     var score = 0
     var correctAnswer = 0
+    var questionCounter = 0
+    let maxQuestion = 10
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,9 +50,12 @@ class ViewController: UIViewController {
     }
 
     func askQuestion(action: UIAlertAction! = nil) {
+        questionCounter += 1
+        
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
-        title = countries[correctAnswer].uppercased()
+        
+        title = "Score : \(score) | \(countries[correctAnswer].uppercased())"
         
         button1.setImage(UIImage(named: countries[0]), for: .normal)
         button2.setImage(UIImage(named: countries[1]), for: .normal)
@@ -63,15 +68,29 @@ class ViewController: UIViewController {
             title = "Correct"
             score += 1
         } else {
-            title = "Wrong"
+            title = "Wrong! That’s the flag of \(countries[sender.tag].uppercased())"
             score -= 1
         }
         
-        let ac = UIAlertController(title: title, message: "Your score is \(score).", preferredStyle: .alert)
-        ac.addAction(UIAlertAction(title: "Continue", style: .default, handler: askQuestion))
-        present(ac, animated: true)
-        
-        
+        if questionCounter == maxQuestion {
+            questionCounter = 0
+            score = 0
+            
+            title = "Game over - Score \(score)"
+            let ac = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "Retry", style: .default, handler: askQuestion))
+            present(ac, animated: true)
+        }
+        else {
+            let ac = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+            present(ac, animated: true)
+            
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1){
+                ac.dismiss(animated: true) {
+                    self.askQuestion()
+                }
+            }
+        }
     }
 }
 
